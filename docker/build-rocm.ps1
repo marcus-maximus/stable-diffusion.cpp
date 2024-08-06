@@ -1,4 +1,4 @@
-$rocMDir = "C:/Program Files/AMD/ROCm/5.7"
+$rocMDir = "C:/Program Files/AMD/ROCm/6.1"
 
 $env:PATH += ";$rocMDir/bin"
 $env:PATH += ";C:/Strawberry/perl/bin"
