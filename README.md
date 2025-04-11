@@ -113,12 +113,12 @@ cmake .. -DGGML_OPENBLAS=ON
 cmake --build . --config Release
 ```
 
-##### Using CUBLAS
+##### Using CUDA
 
 This provides BLAS acceleration using the CUDA cores of your Nvidia GPU. Make sure to have the CUDA toolkit installed. You can download it from your Linux distro's package manager (e.g. `apt install nvidia-cuda-toolkit`) or from here: [CUDA Toolkit](https://developer.nvidia.com/cuda-downloads). Recommended to have at least 4 GB of VRAM.
 
 ```
-cmake .. -DSD_CUBLAS=ON
+cmake .. -DSD_CUDA=ON
 cmake --build . --config Release
 ```
 
@@ -132,6 +132,14 @@ cmake .. -G "Ninja" -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DSD_H
 cmake --build . --config Release
 ```
 
+##### Using MUSA
+
+This provides BLAS acceleration using the MUSA cores of your Moore Threads GPU. Make sure to have the MUSA toolkit installed.
+
+```bash
+cmake .. -DCMAKE_C_COMPILER=/usr/local/musa/bin/clang -DCMAKE_CXX_COMPILER=/usr/local/musa/bin/clang++ -DSD_MUSA=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build . --config Release
+```
 
 ##### Using Metal
 
@@ -232,6 +240,10 @@ arguments:
   -p, --prompt [PROMPT]              the prompt to render
   -n, --negative-prompt PROMPT       the negative prompt (default: "")
   --cfg-scale SCALE                  unconditional guidance scale: (default: 7.0)
+  --skip-layers LAYERS               Layers to skip for SLG steps: (default: [7,8,9])
+  --skip-layer-start START           SLG enabling point: (default: 0.01)
+  --skip-layer-end END               SLG disabling point: (default: 0.2)
+									 SLG will be enabled at step int([STEPS]*[START]) and disabled at int([STEPS]*[END])
   --strength STRENGTH                strength for noising/unnoising (default: 0.75)
   --style-ratio STYLE-RATIO          strength for keeping input identity (default: 20%)
   --control-strength STRENGTH        strength to apply Control Net (default: 0.9)
@@ -314,6 +326,7 @@ These projects use `stable-diffusion.cpp` as a backend for their image generatio
 
 - [Jellybox](https://jellybox.com)
 - [Stable Diffusion GUI](https://github.com/fszontagh/sd.cpp.gui.wx)
+- [Stable Diffusion CLI-GUI](https://github.com/piallai/stable-diffusion.cpp)
 
 ## Contributors
 
