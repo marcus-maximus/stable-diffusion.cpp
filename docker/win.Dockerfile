@@ -14,7 +14,7 @@ ADD https://aka.ms/vs/17/release/vs_buildtools.exe vs_buildtools.exe
 RUN ./vs_buildtools.exe --quiet --wait --norestart --nocache --add 'Microsoft.VisualStudio.Workload.VCTools;includeRecommended'; \
     Remove-Item vs_buildtools.exe -Force
 
-COPY AMD-Software-PRO-Edition-24.Q3-WinSvr2022-For-HIP.exe ./hip_installer.exe
+COPY AMD-Software-PRO-Edition-24.Q4-WinSvr2022-For-HIP.exe ./hip_installer.exe
 RUN Start-Process hip_installer.exe -NoNewWindow -Wait -ArgumentList '"-install -log hip_install_log.txt"'; \
     Remove-Item hip_installer.exe
 
