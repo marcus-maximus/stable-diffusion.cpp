@@ -8,7 +8,6 @@ cmake -S source -B build -G "Ninja" `
     -D CMAKE_C_COMPILER=clang `
     -D CMAKE_CXX_COMPILER=clang++ `
     -D SD_HIPBLAS=ON `
-    -D SD_FLASH_ATTN=ON `
     -D AMDGPU_TARGETS="gfx1100;gfx1102;gfx1030"
 cmake --build build --config Release --parallel
 
