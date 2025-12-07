@@ -33,6 +33,8 @@ option(SD_SYCL                       "sd: sycl backend" OFF)
 option(SD_MUSA                       "sd: musa backend" OFF)
 option(SD_FAST_SOFTMAX               "sd: x1.5 faster softmax, indeterministic (sometimes, same seed don't generate same image), cuda only" OFF)
 option(SD_BUILD_SHARED_LIBS          "sd: build shared libs" OFF)
+option(SD_BUILD_SHARED_GGML_LIB      "sd: build ggml as a separate shared lib" OFF)
+option(SD_USE_SYSTEM_GGML            "sd: use system-installed GGML library" OFF)
 #option(SD_BUILD_SERVER               "sd: build server example"                           ON)
 
 if(SD_CUDA)
@@ -85,18 +87,21 @@ file(GLOB SD_LIB_SOURCES
     "*.hpp"
 )
 
-# we can get only one share lib
 if(SD_BUILD_SHARED_LIBS)
     message("-- Build shared library")
     message(${SD_LIB_SOURCES})
-    set(BUILD_SHARED_LIBS OFF)
+    if(NOT SD_BUILD_SHARED_GGML_LIB)
+        set(BUILD_SHARED_LIBS OFF)
+    endif()
     add_library(${SD_LIB} SHARED ${SD_LIB_SOURCES})
     add_definitions(-DSD_BUILD_SHARED_LIB)
     target_compile_definitions(${SD_LIB} PRIVATE -DSD_BUILD_DLL)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 else()
     message("-- Build static library")
-    set(BUILD_SHARED_LIBS OFF)
+    if(NOT SD_BUILD_SHARED_GGML_LIB)
+        set(BUILD_SHARED_LIBS OFF)
+    endif()
     add_library(${SD_LIB} STATIC ${SD_LIB_SOURCES})
 endif()
 
@@ -118,23 +123,37 @@ endif()
 
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 
-# see https://github.com/ggerganov/ggml/pull/682
-add_definitions(-DGGML_MAX_NAME=128)
+if (NOT SD_USE_SYSTEM_GGML)
+    # see https://github.com/ggerganov/ggml/pull/682
+    add_definitions(-DGGML_MAX_NAME=128)
+endif()
 
 # deps
 # Only add ggml if it hasn't been added yet
 if (NOT TARGET ggml)
-    add_subdirectory(ggml)
+    if (SD_USE_SYSTEM_GGML)
+        find_package(ggml REQUIRED)
+        if (NOT ggml_FOUND)
+            message(FATAL_ERROR "System-installed GGML library not found.")
+        endif()
+        add_library(ggml ALIAS ggml::ggml)
+    else()
+        add_subdirectory(ggml)
+    endif()
 endif()
 
 add_subdirectory(thirdparty)
 
 target_link_libraries(${SD_LIB} PUBLIC ggml zip)
 target_include_directories(${SD_LIB} PUBLIC . thirdparty)
-target_compile_features(${SD_LIB} PUBLIC cxx_std_11)
+target_compile_features(${SD_LIB} PUBLIC c_std_11 cxx_std_17)
 
 
 if (SD_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
+set(SD_PUBLIC_HEADERS stable-diffusion.h)
+set_target_properties(${SD_LIB} PROPERTIES PUBLIC_HEADER "${SD_PUBLIC_HEADERS}")
+
+install(TARGETS ${SD_LIB} LIBRARY PUBLIC_HEADER)
